@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+
+<!-- ค้นหา/ดูการจอง (ใช้ทั้งแท็บ "ค้นหาการจอง" ของแคชเชียร์ และ "การจองทั้งหมด" ของผู้ดูแลระบบ) -->
+<BorderPane fx:id="root" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.badminton.fx.BookingSearchController">
+    <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="6">
+            <padding><Insets bottom="8"/></padding>
+            <Label text="ค้นหาด้วย:"/>
+            <ComboBox fx:id="searchTypeCombo" onAction="#searchTypeChanged"/>
+            <TextField fx:id="keywordField" prefColumnCount="16" onAction="#searchClicked"/>
+            <Button text="ค้นหา" styleClass="primary-button" onAction="#searchClicked"/>
+            <Label fx:id="resultLabel"/>
+        </HBox>
+    </top>
+
+    <center>
+        <SplitPane orientation="VERTICAL" dividerPositions="0.65">
+            <!-- ลำดับคอลัมน์ต้องตรงกับ setColumnValues ใน BookingSearchController -->
+            <TableView fx:id="table">
+                <columns>
+                    <TableColumn text="รหัส" prefWidth="70"/>
+                    <TableColumn text="สมาชิก" prefWidth="150"/>
+                    <TableColumn text="สนาม" prefWidth="55"/>
+                    <TableColumn text="วันที่ใช้สนาม" prefWidth="150"/>
+                    <TableColumn text="เวลา" prefWidth="100"/>
+                    <TableColumn text="ชม." prefWidth="45"/>
+                    <TableColumn text="ค่าสนาม" prefWidth="90"/>
+                    <TableColumn text="ค่าเช่ารองเท้า" prefWidth="100"/>
+                    <TableColumn text="ยอดรวม" prefWidth="90"/>
+                    <TableColumn text="สถานะ" prefWidth="220"/>
+                </columns>
+            </TableView>
+            <TitledPane text="รายละเอียดการจอง (คลิกแถวในตาราง)" collapsible="false" styleClass="section"
+                        maxHeight="Infinity">
+                <TextArea fx:id="detailsArea" editable="false" wrapText="true"/>
+            </TitledPane>
+        </SplitPane>
+    </center>
+</BorderPane>

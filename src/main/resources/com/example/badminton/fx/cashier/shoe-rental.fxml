@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- แท็บ "เช่ารองเท้า": ฟอร์มเช่า (ซ้าย) + ประวัติการเช่าทั้งหมด (กลาง) -->
+<BorderPane fx:id="root" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.badminton.fx.cashier.ShoeRentalController">
+    <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+
+    <left>
+        <VBox prefWidth="400">
+            <BorderPane.margin><Insets right="10"/></BorderPane.margin>
+            <TitledPane text="เช่ารองเท้า (50 บาท/คู่/วันที่จอง)" collapsible="false" styleClass="section">
+                <GridPane hgap="8" vgap="8">
+                    <columnConstraints>
+                        <ColumnConstraints/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+                    <Label text="รหัสการจอง:"/>
+                    <HBox spacing="4" GridPane.columnIndex="1">
+                        <TextField fx:id="bookingIdField" onAction="#lookupBooking" HBox.hgrow="ALWAYS"/>
+                        <Button text="ค้นหา" onAction="#lookupBooking"/>
+                    </HBox>
+                    <Label fx:id="bookingLabel" text="กรอกรหัสการจองแล้วกด &quot;ค้นหา&quot;" styleClass="muted"
+                           wrapText="true" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+                    <Label text="จำนวนรองเท้า (คู่):" GridPane.rowIndex="2"/>
+                    <Spinner fx:id="pairsSpinner" editable="true" maxWidth="Infinity"
+                             GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                    <Label fx:id="feeLabel" styleClass="fee-text" GridPane.rowIndex="3" GridPane.columnSpan="2"/>
+                    <Label text="เลขอ้างอิงสลิป:" GridPane.rowIndex="4"/>
+                    <TextField fx:id="slipField" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                    <Button fx:id="rentButton" text="ยืนยันการเช่า" styleClass="primary-button" maxWidth="Infinity"
+                            disable="true" onAction="#rentShoes" GridPane.rowIndex="5" GridPane.columnSpan="2"/>
+                </GridPane>
+            </TitledPane>
+        </VBox>
+    </left>
+
+    <center>
+        <TitledPane text="ประวัติการเช่ารองเท้าทั้งหมด" collapsible="false" styleClass="section" maxHeight="Infinity">
+            <!-- ลำดับคอลัมน์ต้องตรงกับ setColumnValues ใน ShoeRentalController -->
+            <TableView fx:id="table">
+                <columns>
+                    <TableColumn text="รหัสเช่า" prefWidth="80"/>
+                    <TableColumn text="รหัสการจอง" prefWidth="90"/>
+                    <TableColumn text="สมาชิก" prefWidth="150"/>
+                    <TableColumn text="วันที่ใช้" prefWidth="100"/>
+                    <TableColumn text="จำนวนคู่" prefWidth="70"/>
+                    <TableColumn text="ค่าเช่า (บาท)" prefWidth="95"/>
+                    <TableColumn text="สลิป" prefWidth="160"/>
+                </columns>
+            </TableView>
+        </TitledPane>
+    </center>
+</BorderPane>

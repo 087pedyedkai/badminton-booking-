@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+
+<!--
+    หน้าต่างหลัก: แถบหัว (top) + เนื้อหา (center) ที่ MainController สลับระหว่าง
+    loginView / cashierTabs / adminTabs (สามหน้านี้ประกาศไว้ใน fx:define แล้วค่อยนำมาใส่ center)
+-->
+<BorderPane fx:id="root" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.badminton.fx.MainController">
+
+    <top>
+        <HBox styleClass="header" alignment="CENTER_LEFT" spacing="12">
+            <Label text="ระบบจองสนามแบดมินตัน" styleClass="header-title"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Label fx:id="userLabel" styleClass="header-user"/>
+            <Button fx:id="logoutButton" text="ออกจากระบบ" onAction="#logout"/>
+        </HBox>
+    </top>
+
+    <fx:define>
+        <!-- หน้าแรก -->
+        <fx:include fx:id="loginView" source="login.fxml"/>
+
+        <!-- แท็บของแคชเชียร์ (ลำดับต้องตรงกับ bindTabs ใน MainController) -->
+        <TabPane fx:id="cashierTabs" tabClosingPolicy="UNAVAILABLE">
+            <padding><Insets top="4"/></padding>
+            <Tab text="จองสนาม">
+                <fx:include fx:id="cashierBooking" source="cashier/booking.fxml"/>
+            </Tab>
+            <Tab text="ค้นหาการจอง">
+                <fx:include fx:id="cashierSearch" source="booking-search.fxml"/>
+            </Tab>
+            <Tab text="แพ็กเกจชั่วโมง">
+                <fx:include fx:id="cashierPackage" source="cashier/package.fxml"/>
+            </Tab>
+            <Tab text="เช่ารองเท้า">
+                <fx:include fx:id="cashierShoe" source="cashier/shoe-rental.fxml"/>
+            </Tab>
+            <Tab text="ขายอุปกรณ์">
+                <fx:include fx:id="cashierSales" source="cashier/sales.fxml"/>
+            </Tab>
+            <Tab text="สมาชิก">
+                <fx:include fx:id="cashierMember" source="member.fxml"/>
+            </Tab>
+        </TabPane>
+
+        <!-- แท็บของผู้ดูแลระบบ -->
+        <TabPane fx:id="adminTabs" tabClosingPolicy="UNAVAILABLE">
+            <padding><Insets top="4"/></padding>
+            <Tab text="รายงานรายได้">
+                <fx:include fx:id="adminIncome" source="admin/income-report.fxml"/>
+            </Tab>
+            <Tab text="ประวัติการจองของสมาชิก">
+                <fx:include fx:id="adminHistory" source="admin/member-history.fxml"/>
+            </Tab>
+            <Tab text="การจองทั้งหมด">
+                <fx:include fx:id="adminBookings" source="booking-search.fxml"/>
+            </Tab>
+            <Tab text="รายการรับเงิน">
+                <fx:include fx:id="adminPayments" source="admin/payments.fxml"/>
+            </Tab>
+            <Tab text="สมาชิก">
+                <fx:include fx:id="adminMember" source="member.fxml"/>
+            </Tab>
+            <Tab text="จัดการสินค้า">
+                <fx:include fx:id="adminProduct" source="admin/product-manage.fxml"/>
+            </Tab>
+            <Tab text="วันหยุดนักขัตฤกษ์">
+                <fx:include fx:id="adminHoliday" source="admin/holiday.fxml"/>
+            </Tab>
+        </TabPane>
+    </fx:define>
+</BorderPane>

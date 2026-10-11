@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+
+<!-- รายชื่อสมาชิก (ใช้ทั้งแคชเชียร์และผู้ดูแลระบบ) -->
+<BorderPane fx:id="root" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.badminton.fx.MemberController">
+    <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="6">
+            <padding><Insets bottom="8"/></padding>
+            <Label text="ค้นหา (รหัส/ชื่อ):"/>
+            <TextField fx:id="filterField" prefColumnCount="18"/>
+            <Button text="+ สมัครสมาชิกใหม่" styleClass="primary-button" onAction="#registerMember"/>
+        </HBox>
+    </top>
+
+    <center>
+        <SplitPane dividerPositions="0.7">
+            <!-- ลำดับคอลัมน์ต้องตรงกับ setColumnValues ใน MemberController -->
+            <TableView fx:id="table">
+                <columns>
+                    <TableColumn text="รหัส" prefWidth="70"/>
+                    <TableColumn text="ชื่อ-นามสกุล" prefWidth="170"/>
+                    <TableColumn text="เบอร์โทร" prefWidth="110"/>
+                    <TableColumn text="วันที่สมัคร" prefWidth="100"/>
+                    <TableColumn text="จำนวนการจอง" prefWidth="100"/>
+                    <TableColumn text="ชั่วโมงสะสม" prefWidth="95"/>
+                    <TableColumn text="แพ็กเกจคงเหลือ (ชม.)" prefWidth="150"/>
+                </columns>
+            </TableView>
+            <TitledPane text="ข้อมูลสมาชิก" collapsible="false" styleClass="section" maxHeight="Infinity">
+                <TextArea fx:id="detailsArea" editable="false" wrapText="true"/>
+            </TitledPane>
+        </SplitPane>
+    </center>
+</BorderPane>

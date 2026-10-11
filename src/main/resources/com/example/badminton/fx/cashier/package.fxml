@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- แท็บ "แพ็กเกจชั่วโมง": ตรวจสอบชั่วโมงคงเหลือ (กลาง) และขายแพ็กเกจ (ขวา) -->
+<BorderPane fx:id="root" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.badminton.fx.cashier.PackageController">
+    <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="6">
+            <padding><Insets bottom="10"/></padding>
+            <Label text="รหัสสมาชิก:"/>
+            <TextField fx:id="memberIdField" prefColumnCount="10" onAction="#lookupMember"/>
+            <Button text="ตรวจสอบ" onAction="#lookupMember"/>
+            <Label fx:id="memberLabel" text="กรอกรหัสสมาชิกแล้วกด &quot;ตรวจสอบ&quot;" styleClass="muted"/>
+        </HBox>
+    </top>
+
+    <center>
+        <TitledPane text="แพ็กเกจของสมาชิก" collapsible="false" styleClass="section" maxHeight="Infinity">
+            <VBox spacing="6">
+                <HBox alignment="CENTER_LEFT" spacing="6">
+                    <Label text="ชั่วโมงแพ็กเกจคงเหลือรวม:"/>
+                    <Label fx:id="remainingLabel" text="-" styleClass="huge-number"/>
+                </HBox>
+                <!-- ลำดับคอลัมน์ต้องตรงกับ setColumnValues ใน PackageController -->
+                <TableView fx:id="table" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn text="รหัสแพ็กเกจ" prefWidth="110"/>
+                        <TableColumn text="วันที่ซื้อ" prefWidth="110"/>
+                        <TableColumn text="ชั่วโมงทั้งหมด" prefWidth="110"/>
+                        <TableColumn text="ใช้ไป" prefWidth="80"/>
+                        <TableColumn text="คงเหลือ" prefWidth="80"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </TitledPane>
+    </center>
+
+    <right>
+        <VBox>
+            <BorderPane.margin><Insets left="10"/></BorderPane.margin>
+            <TitledPane text="ขายแพ็กเกจ" collapsible="false" styleClass="section">
+                <GridPane hgap="8" vgap="8">
+                    <columnConstraints>
+                        <ColumnConstraints/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+                    <VBox GridPane.columnSpan="2">
+                        <Label fx:id="packageTitleLabel" styleClass="strong"/>
+                        <Label fx:id="priceLabel"/>
+                    </VBox>
+                    <Label text="เลขอ้างอิงสลิป:" GridPane.rowIndex="1"/>
+                    <TextField fx:id="slipField" prefColumnCount="18" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    <Button fx:id="buyButton" text="ซื้อแพ็กเกจ" styleClass="primary-button" maxWidth="Infinity"
+                            disable="true" onAction="#buyPackage" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+                </GridPane>
+            </TitledPane>
+        </VBox>
+    </right>
+</BorderPane>

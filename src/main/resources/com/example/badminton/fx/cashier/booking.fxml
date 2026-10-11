@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.example.badminton.fx.DateBox?>
+<?import com.example.badminton.fx.cashier.CourtScheduleGrid?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<!--
+    แท็บ "จองสนาม": ซ้าย = ตารางสถานะสนาม (CourtScheduleGrid), ขวา = ฟอร์มจอง + สรุปราคา
+-->
+<BorderPane fx:id="root" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.badminton.fx.cashier.BookingController">
+    <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="8">
+            <padding><Insets bottom="10"/></padding>
+            <Label text="วันที่ใช้สนาม:" styleClass="strong"/>
+            <DateBox fx:id="dateBox"/>
+            <Label fx:id="openingHoursLabel"/>
+        </HBox>
+    </top>
+
+    <center>
+        <CourtScheduleGrid fx:id="scheduleGrid"/>
+    </center>
+
+    <right>
+        <TitledPane text="ข้อมูลการจอง" collapsible="false" styleClass="section" prefWidth="400"
+                    maxHeight="Infinity">
+            <BorderPane.margin><Insets left="10"/></BorderPane.margin>
+            <!-- ฟอร์มอยู่ใน ScrollPane: ถ้าหน้าจอเตี้ยกว่าฟอร์ม จะเลื่อนดูได้ (fitToWidth = กว้างเท่าพื้นที่เสมอ) -->
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER">
+                <GridPane hgap="8" vgap="8">
+                    <padding><Insets top="4" right="4" bottom="4" left="4"/></padding>
+                    <columnConstraints>
+                        <ColumnConstraints/>
+                        <ColumnConstraints hgrow="ALWAYS" fillWidth="true"/>
+                    </columnConstraints>
+
+                    <!-- สมาชิก -->
+                    <Label text="รหัสสมาชิก:"/>
+                    <HBox spacing="4" GridPane.columnIndex="1">
+                        <TextField fx:id="memberIdField" onAction="#lookupMember" HBox.hgrow="ALWAYS">
+                            <tooltip><Tooltip text="เช่น M001 แล้วกด Enter"/></tooltip>
+                        </TextField>
+                        <Button text="ตรวจสอบ" onAction="#lookupMember"/>
+                    </HBox>
+                    <Label fx:id="memberInfoLabel" text="ยังไม่ได้เลือกสมาชิก" styleClass="muted" wrapText="true"
+                           GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+
+                    <!-- สนามและเวลา -->
+                    <Label text="สนาม:" GridPane.rowIndex="2"/>
+                    <ComboBox fx:id="courtCombo" maxWidth="Infinity" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                    <Label text="เวลาเริ่ม:" GridPane.rowIndex="3"/>
+                    <ComboBox fx:id="startTimeCombo" maxWidth="Infinity" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                    <Label text="จำนวนชั่วโมง:" GridPane.rowIndex="4"/>
+                    <Spinner fx:id="hoursSpinner" editable="true" maxWidth="Infinity"
+                             GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                    <CheckBox fx:id="usePackageCheck" text="ใช้ชั่วโมงแพ็กเกจ (ไม่มีค่าสนาม)"
+                              GridPane.rowIndex="5" GridPane.columnSpan="2"/>
+                    <Label text="เช่ารองเท้า (คู่):" GridPane.rowIndex="6"/>
+                    <Spinner fx:id="shoeSpinner" editable="true" maxWidth="Infinity"
+                             GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                    <Label text="เลขอ้างอิงสลิป:" GridPane.rowIndex="7"/>
+                    <TextField fx:id="slipField" GridPane.rowIndex="7" GridPane.columnIndex="1">
+                        <tooltip><Tooltip text="เช่น slips/0001.jpg หรือ CASH (ไม่ต้องกรอกถ้ายอดชำระเป็น 0)"/></tooltip>
+                    </TextField>
+
+                    <!-- สรุปราคา (BookingController เติม Label ทีละบรรทัด) -->
+                    <TitledPane text="สรุปการจอง" collapsible="false" styleClass="section"
+                                GridPane.rowIndex="8" GridPane.columnSpan="2">
+                        <VBox fx:id="summaryBox" spacing="3"/>
+                    </TitledPane>
+
+                    <HBox alignment="CENTER_RIGHT" spacing="8" GridPane.rowIndex="9" GridPane.columnSpan="2">
+                        <Button text="ล้างฟอร์ม" onAction="#clearForm"/>
+                        <Button fx:id="confirmButton" text="ยืนยันการจอง" styleClass="primary-button"
+                                onAction="#confirmBooking"/>
+                    </HBox>
+                </GridPane>
+            </ScrollPane>
+        </TitledPane>
+    </right>
+</BorderPane>

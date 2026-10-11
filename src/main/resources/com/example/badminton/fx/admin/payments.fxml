@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+
+<!-- แท็บ "รายการรับเงิน": ตาราง Payment ทุกรายการ + ยอดรวมด้านล่าง -->
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.badminton.fx.admin.PaymentsController">
+    <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+
+    <center>
+        <!-- ลำดับคอลัมน์ต้องตรงกับ setColumnValues ใน PaymentsController -->
+        <TableView fx:id="table">
+            <columns>
+                <TableColumn text="รหัส" prefWidth="80"/>
+                <TableColumn text="วันที่รับเงิน" prefWidth="110"/>
+                <TableColumn text="หมวด" prefWidth="130"/>
+                <TableColumn text="อ้างอิง" prefWidth="90"/>
+                <TableColumn text="สมาชิก" prefWidth="180"/>
+                <TableColumn text="จำนวนเงิน (บาท)" prefWidth="130"/>
+                <TableColumn text="สลิป" prefWidth="220"/>
+            </columns>
+        </TableView>
+    </center>
+
+    <bottom>
+        <Label fx:id="totalLabel" styleClass="fee-text,ok-text">
+            <BorderPane.margin><Insets top="8"/></BorderPane.margin>
+        </Label>
+    </bottom>
+</BorderPane>

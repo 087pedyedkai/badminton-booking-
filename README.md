@@ -1,10 +1,11 @@
 # ระบบจัดการการจองสนามแบดมินตัน (Java OOP: Console + GUI)
 
 โปรเจกต์ตัวอย่างสำหรับเรียน Java OOP: จองสนาม 12 สนาม, สมาชิก, แพ็กเกจชั่วโมง, ส่วนลดชั่วโมงที่ 20,
-เช่ารองเท้า, ขายอุปกรณ์ และรายงานรายได้รายวัน/รายเดือน ใช้เฉพาะ Java มาตรฐาน (ไม่มีฐานข้อมูล ไม่มี framework)
+เช่ารองเท้า, ขายอุปกรณ์ และรายงานรายได้รายวัน/รายเดือน ใช้ Java มาตรฐาน + JavaFX สำหรับหน้าจอ (ไม่มีฐานข้อมูล)
 
-มี 2 หน้าตาให้เลือกใช้ ซึ่งใช้ Service และกฎทางธุรกิจชุดเดียวกัน:
-- **GUI (Java Swing)** — รัน `com.example.badminton.gui.BadmintonApp`
+มี 3 หน้าตาให้เลือกใช้ ซึ่งใช้ Service และกฎทางธุรกิจชุดเดียวกัน:
+- **GUI (JavaFX: FXML + Controller + CSS)** — รัน `com.example.badminton.fx.BadmintonFxApp` (หน้าจอหลัก)
+- **GUI (Java Swing)** — รัน `com.example.badminton.gui.BadmintonApp` (ฉบับเดิม ยังเก็บไว้)
 - **Console** — รัน `com.example.badminton.Main`
 
 ---
@@ -118,7 +119,19 @@ src/main/java/com/example/badminton/
 ├── util/
 │   ├── InputHelper.java       รับข้อมูลจากคีย์บอร์ดแบบไม่ crash (Console)
 │   └── FormatHelper.java      แสดงวันที่ไทย/จำนวนเงิน
-└── gui/                       หน้าตาแบบหน้าต่าง (Java Swing)
+├── fx/                        หน้าตาแบบหน้าต่าง (JavaFX) — Controller ของแต่ละหน้าจอ
+│   ├── BadmintonFxApp.java    จุดเริ่มโปรแกรมแบบ JavaFX (สร้าง BadmintonSystem แล้วโหลด main.fxml)
+│   ├── MainController.java    หน้าต่างหลัก (แถบหัว + สลับหน้า login / แท็บแคชเชียร์ / แท็บผู้ดูแลระบบ)
+│   ├── LoginController.java  RegisterMemberController.java
+│   ├── BookingSearchController.java  MemberController.java   (ใช้ทั้งแคชเชียร์และผู้ดูแล)
+│   ├── FxHelper.java          โหลด FXML + ส่ง BadmintonSystem ให้ Controller, Alert, ฟอนต์ไทย
+│   ├── DateBox.java           ช่องวันที่ (< DatePicker > วันนี้) แปลง พ.ศ. ให้อัตโนมัติ
+│   ├── Refreshable.java       interface "โหลดข้อมูลใหม่เมื่อเปิดแท็บ"
+│   ├── cashier/               BookingController + CourtScheduleGrid (ตารางสนาม)
+│   │                          PackageController  ShoeRentalController  SalesController
+│   └── admin/                 IncomeReportController  MemberHistoryController  PaymentsController
+│                              ProductManageController  HolidayController
+└── gui/                       หน้าตาแบบหน้าต่าง (Java Swing ฉบับเดิม)
     ├── BadmintonApp.java      จุดเริ่มโปรแกรมแบบ GUI
     ├── MainFrame.java         หน้าต่างหลัก (แถบหัว + สลับหน้า login / แคชเชียร์ / ผู้ดูแลระบบ)
     ├── LoginPanel.java        หน้าแรก: เลือกบทบาท / สมัครสมาชิก
@@ -130,13 +143,44 @@ src/main/java/com/example/badminton/
     │                          PackagePanel  ShoeRentalPanel  SalesPanel
     └── admin/                 IncomeReportPanel  MemberHistoryPanel  PaymentsPanel
                                ProductManagePanel  HolidayPanel
+
+src/main/resources/com/example/badminton/fx/   หน้าตาของ JavaFX (แยกจากโค้ด)
+├── style.css                  สีและฟอนต์ทั้งโปรแกรม
+├── main.fxml  login.fxml  register-member.fxml  booking-search.fxml  member.fxml
+├── cashier/   booking.fxml  package.fxml  shoe-rental.fxml  sales.fxml
+└── admin/     income-report.fxml  member-history.fxml  payments.fxml  product-manage.fxml  holiday.fxml
 ```
+
+### เทียบหน้าจอ Swing ↔ JavaFX
+
+| Swing (`gui/`) | FXML (`resources/.../fx/`) | Controller (`fx/`) |
+|---|---|---|
+| `BadmintonApp` | – | `BadmintonFxApp` |
+| `MainFrame` + `RoleTabbedPane` | `main.fxml` | `MainController` |
+| `LoginPanel` | `login.fxml` | `LoginController` |
+| `RegisterMemberDialog` | `register-member.fxml` | `RegisterMemberController` |
+| `BookingSearchPanel` | `booking-search.fxml` | `BookingSearchController` |
+| `MemberPanel` | `member.fxml` | `MemberController` |
+| `cashier/BookingPanel` + `CourtSchedulePanel` | `cashier/booking.fxml` | `cashier/BookingController` + `cashier/CourtScheduleGrid` |
+| `cashier/PackagePanel` | `cashier/package.fxml` | `cashier/PackageController` |
+| `cashier/ShoeRentalPanel` | `cashier/shoe-rental.fxml` | `cashier/ShoeRentalController` |
+| `cashier/SalesPanel` | `cashier/sales.fxml` | `cashier/SalesController` |
+| `admin/IncomeReportPanel` | `admin/income-report.fxml` | `admin/IncomeReportController` |
+| `admin/MemberHistoryPanel` | `admin/member-history.fxml` | `admin/MemberHistoryController` |
+| `admin/PaymentsPanel` | `admin/payments.fxml` | `admin/PaymentsController` |
+| `admin/ProductManagePanel` | `admin/product-manage.fxml` | `admin/ProductManageController` |
+| `admin/HolidayPanel` | `admin/holiday.fxml` | `admin/HolidayController` |
+| `UiHelper` / `DateField` / `Refreshable` | `style.css` | `FxHelper` / `DateBox` / `Refreshable` |
+
+ทุก Controller มี constructor ที่รับ `BadmintonSystem` และ `FxHelper.load()` ตั้ง `FXMLLoader.setControllerFactory()`
+ให้สร้าง Controller ด้วย `new XxxController(system)` ทุกหน้าจอจึงใช้ Service ชุดเดียวกัน
 
 > หน้าจอ GUI ไม่ได้คำนวณราคาหรือตรวจกฎเอง ทุกอย่างเรียกผ่าน Service เดียวกับ Console
 > (เช่น `BookingService.validateBooking()`, `PaymentService.calculateCourtFee()`) กฎทางธุรกิจจึงอยู่ที่เดียว
 >
-> ไฟล์ตัวอย่าง JavaFX ที่ IntelliJ สร้างมาตอนแรกถูกลบออกแล้ว ส่วน GUI ใช้ Swing ซึ่งมากับ JDK อยู่แล้ว
-> (`module-info.java` มีแค่ `requires java.desktop;`) ไม่ต้องติดตั้ง dependency เพิ่ม
+> JavaFX ไม่ได้มากับ JDK จึงเพิ่ม dependency `javafx-controls` และ `javafx-fxml` (เวอร์ชัน 25.0.4 ให้ตรงกับ JDK 25)
+> ใน `pom.xml` และ `module-info.java` มี `requires javafx.controls; requires javafx.fxml;` พร้อม `opens ... to javafx.fxml`
+> ให้ FXMLLoader เข้าถึง Controller ได้ (ยังคง `requires java.desktop;` ไว้ให้ Swing)
 
 ---
 
@@ -144,14 +188,24 @@ src/main/java/com/example/badminton/
 
 1. เปิดโฟลเดอร์ `Badminton` ใน IntelliJ (เป็นโปรเจกต์ Maven ให้รอ IntelliJ โหลด dependency เสร็จ)
 2. ตรวจ **File → Project Structure → SDK** เป็น JDK 25 (มีอยู่ที่ `~/.jdks/openjdk-25.0.1`)
-3. **แบบ GUI:** เปิด `src/main/java/com/example/badminton/gui/BadmintonApp.java`
-   แล้วคลิก ▶ สีเขียวข้าง `public static void main` → **Run 'BadmintonApp.main()'**
-4. **แบบ Console:** เปิด `src/main/java/com/example/badminton/Main.java` แล้วกด ▶ เช่นกัน
+3. **แบบ GUI (JavaFX):** เปิด `src/main/java/com/example/badminton/fx/BadmintonFxApp.java`
+   แล้วคลิก ▶ สีเขียวข้าง `public static void main` → **Run 'BadmintonFxApp.main()'**
+   หรือเปิดแถบ **Maven** ด้านขวา → **Plugins → javafx → javafx:run** (ดับเบิลคลิก)
+4. **แบบ GUI (Swing ฉบับเดิม):** เปิด `gui/BadmintonApp.java` แล้วกด ▶ เช่นกัน
+5. **แบบ Console:** เปิด `src/main/java/com/example/badminton/Main.java` แล้วกด ▶ เช่นกัน
    (ใช้งานผ่านหน้าต่าง Run ด้านล่าง พิมพ์ตัวเลขเมนูแล้วกด Enter)
+
+**รันจาก Terminal (Windows):** ต้องตั้ง `JAVA_HOME` เป็น JDK 25 ก่อน แล้วใช้ Maven Wrapper ที่มากับโปรเจกต์
+```
+.\mvnw.cmd clean compile     คอมไพล์
+.\mvnw.cmd javafx:run        เปิดหน้าจอ JavaFX
+```
+> เพราะ `module-info.java` ต้องใช้ JavaFX การรันด้วยคำสั่ง `java` เอง (รวมถึงแบบ Console) ต้องใส่ไฟล์ jar ของ JavaFX
+> ใน `--module-path` ด้วย (IntelliJ และ `mvnw` จัดการให้อัตโนมัติ)
 
 ### การใช้งาน GUI โดยย่อ
 - **หน้าแรก:** กดเลือก "แคชเชียร์" หรือ "ผู้ดูแลระบบ" (จำลองการเข้าสู่ระบบ) หรือ "สมัครสมาชิก"
-- **แคชเชียร์ → จองสนาม:** เลือกวันที่ (ปุ่ม `<` `>`) → กรอกรหัสสมาชิกแล้วกด "ตรวจสอบ"
+- **แคชเชียร์ → จองสนาม:** เลือกวันที่ (ปุ่ม `<` `>` พิมพ์ หรือกดไอคอนปฏิทินของ JavaFX) → กรอกรหัสสมาชิกแล้วกด "ตรวจสอบ"
   → คลิกช่องว่างในตารางสนามเพื่อเลือกสนามและเวลาเริ่ม → ปรับจำนวนชั่วโมง/รองเท้า/แพ็กเกจ
   → กล่อง "สรุปการจอง" คำนวณราคาให้ทันที (สีแดง = จองไม่ได้ พร้อมเหตุผล) → กรอกสลิป → "ยืนยันการจอง"
 - **สีในตารางสนาม:** เขียว = ว่าง, แดงอ่อน = จองแล้ว, ส้ม = จองด้วยแพ็กเกจ, เทา = ปิด,
@@ -223,8 +277,9 @@ src/main/java/com/example/badminton/
 | ห้ามนอกเวลา / ห้ามจองซ้อน / ต่างสนามได้ | `BookingService.validateBooking()`, `isCourtAvailable()`, `Booking.overlapsWith()` |
 | ห้ามจองย้อนหลัง, ชั่วโมงไม่ถูกต้อง, สนามไม่ถูกต้อง | `BookingService.validateBooking()`, `InputHelper.readInt()` |
 | เฉพาะสมาชิกจองได้ | `SystemUser.askForMember()`, `BookingService.createBooking()` |
-| สมัครสมาชิก, รหัสไม่ซ้ำ | `Main.registerMember()`, `gui.RegisterMemberDialog`, `MemberService.registerMember()` |
-| หน้าจอ GUI (Swing) ครบทุกฟังก์ชัน | `gui.BadmintonApp`, `gui.MainFrame`, แพ็กเกจ `gui.cashier` และ `gui.admin` |
+| สมัครสมาชิก, รหัสไม่ซ้ำ | `Main.registerMember()`, `fx.RegisterMemberController`, `gui.RegisterMemberDialog`, `MemberService.registerMember()` |
+| หน้าจอ GUI (JavaFX: FXML + Controller + CSS) ครบทุกฟังก์ชัน | `fx.BadmintonFxApp`, `fx.MainController`, แพ็กเกจ `fx.cashier` และ `fx.admin`, ไฟล์ใน `resources/com/example/badminton/fx/` |
+| หน้าจอ GUI (Swing ฉบับเดิม) | `gui.BadmintonApp`, `gui.MainFrame`, แพ็กเกจ `gui.cashier` และ `gui.admin` |
 | ข้อมูลสมาชิก (รหัส ชื่อ เบอร์) | `Member` |
 | บทบาทแคชเชียร์ / ผู้ดูแล | `SystemUser` (abstract), `Cashier`, `Administrator` |
 | ข้อมูลการจองครบ (รหัส สมาชิก สนาม วันที่ เวลา ค่าเช่า สลิป สถานะ) | `Booking` |

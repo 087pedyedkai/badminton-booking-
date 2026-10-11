@@ -1,0 +1,179 @@
+/*
+ * หน้าตาของโปรแกรม JavaFX ทั้งหมด (สีชุดเดียวกับ UiHelper ของ Swing: โทนเขียวสนามแบดมินตัน)
+ * ฟอนต์ไทยตัวจริงถูกเลือกในโค้ด (FxHelper.pickThaiFont) เพราะ CSS ของ JavaFX ระบุฟอนต์สำรองหลายตัวไม่ได้
+ *
+ * สีหลัก:  #2E7D32 (PRIMARY)  #1B5E20 (PRIMARY_DARK)  #F4F6F4 (BACKGROUND)
+ *          #C62828 (ERROR)    #616161 (MUTED)
+ */
+
+.root {
+    -fx-font-family: "Leelawadee UI";
+    -fx-font-size: 14px;
+    -fx-base: #F4F6F4;
+    -fx-background-color: #F4F6F4;
+    -fx-accent: #2E7D32;
+    -fx-focus-color: #2E7D32;
+}
+
+/* ---------------- แถบหัวของหน้าต่างหลัก ---------------- */
+.header {
+    -fx-background-color: #1B5E20;
+    -fx-padding: 10 16 10 16;
+}
+
+.header-title {
+    -fx-text-fill: white;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.header-user {
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+}
+
+/* ---------------- ข้อความ ---------------- */
+/* (ไม่ใช้ชื่อ .title เพราะชื่อนี้ TitledPane ใช้กับแถบหัวข้อของมันเอง) */
+.page-title {
+    -fx-text-fill: #1B5E20;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.muted {
+    -fx-text-fill: #616161;
+}
+
+.error-text {
+    -fx-text-fill: #C62828;
+}
+
+.ok-text {
+    -fx-text-fill: #1B5E20;
+}
+
+.strong {
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+}
+
+/* ตัวเลขใหญ่ เช่น ยอดรวม ชั่วโมงคงเหลือ */
+.big-number {
+    -fx-text-fill: #1B5E20;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+.huge-number {
+    -fx-text-fill: #1B5E20;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
+.fee-text {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+/* สรุปการจอง */
+.summary-discount {
+    -fx-text-fill: #2E7D32;
+}
+
+.summary-total {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+}
+
+/* ---------------- ปุ่ม ---------------- */
+.primary-button {
+    -fx-background-color: #2E7D32;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4;
+}
+
+.primary-button:hover {
+    -fx-background-color: #1B5E20;
+}
+
+.primary-button:pressed {
+    -fx-background-color: #144A18;
+}
+
+/* ---------------- กรอบหัวข้อ (TitledPane ที่พับไม่ได้) ---------------- */
+.section {
+    -fx-text-fill: #1B5E20;
+}
+
+.section > .title > .text {
+    -fx-font-weight: bold;
+}
+
+/* ---------------- หน้าเข้าสู่ระบบ ---------------- */
+.login-card {
+    -fx-background-color: white;
+    -fx-border-color: #C8E6C9;
+    -fx-border-width: 2;
+    -fx-padding: 28 48 28 48;
+    -fx-spacing: 10;
+    -fx-alignment: center;
+}
+
+.login-title {
+    -fx-text-fill: #1B5E20;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
+.big-button {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 360;
+    -fx-pref-height: 46;
+}
+
+.note {
+    -fx-font-size: 12px;
+}
+
+/* ---------------- แท็บ ---------------- */
+.tab-pane > .tab-header-area .tab-label {
+    -fx-font-weight: bold;
+}
+
+/* ---------------- ตารางสนาม (CourtScheduleGrid) ---------------- */
+.schedule-grid {
+    -fx-background-color: white;
+}
+
+.slot {
+    -fx-alignment: center;
+    -fx-text-fill: #404040;
+    -fx-font-size: 12px;
+    -fx-border-color: white;
+    -fx-border-width: 0 1 1 0;
+    -fx-cursor: hand;
+}
+
+.slot-header {
+    -fx-background-color: #E0E0E0;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-cursor: default;
+}
+
+.slot-free     { -fx-background-color: #E8F5E9; }
+.slot-paid     { -fx-background-color: #EF9A9A; }
+.slot-package  { -fx-background-color: #FFCC80; }
+.slot-closed   { -fx-background-color: #D6D6D6; }
+.slot-selected { -fx-background-color: #FFF176; }
+.slot-conflict { -fx-background-color: #E53935; -fx-text-fill: white; }
+
+.legend-box {
+    -fx-min-width: 14;
+    -fx-min-height: 14;
+    -fx-max-width: 14;
+    -fx-max-height: 14;
+    -fx-border-color: gray;
+}

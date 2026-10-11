@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- แท็บ "ขายอุปกรณ์": สินค้า (ซ้าย) | ตะกร้า + ชำระเงิน (ขวา) -->
+<BorderPane fx:id="root" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.badminton.fx.cashier.SalesController">
+    <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+
+    <center>
+        <SplitPane dividerPositions="0.5">
+            <TitledPane text="สินค้า (เลือกแถวแล้วกดเพิ่มลงตะกร้า หรือดับเบิลคลิก)" collapsible="false"
+                        styleClass="section" maxHeight="Infinity">
+                <VBox spacing="6">
+                    <!-- ลำดับคอลัมน์ต้องตรงกับ setColumnValues ใน SalesController -->
+                    <TableView fx:id="productTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn text="รหัส" prefWidth="70"/>
+                            <TableColumn text="สินค้า" prefWidth="220"/>
+                            <TableColumn text="ราคา (บาท)" prefWidth="100"/>
+                        </columns>
+                    </TableView>
+                    <HBox alignment="CENTER_LEFT" spacing="6">
+                        <Label text="จำนวน:"/>
+                        <Spinner fx:id="quantitySpinner" editable="true" prefWidth="90"/>
+                        <Button text="เพิ่มลงตะกร้า &gt;" styleClass="primary-button" onAction="#addToCart"/>
+                    </HBox>
+                </VBox>
+            </TitledPane>
+
+            <TitledPane text="ตะกร้าสินค้า" collapsible="false" styleClass="section" maxHeight="Infinity">
+                <VBox spacing="6">
+                    <HBox spacing="6">
+                        <Button text="ลบรายการที่เลือก" onAction="#removeSelected"/>
+                        <Button text="ล้างตะกร้า" onAction="#clearCart"/>
+                    </HBox>
+                    <!-- ตะกร้าไม่ต้องเรียง (sortable=false) เพื่อให้ลำดับตรงกับ List ในโปรแกรม -->
+                    <TableView fx:id="cartTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn text="รหัส" prefWidth="70" sortable="false"/>
+                            <TableColumn text="สินค้า" prefWidth="180" sortable="false"/>
+                            <TableColumn text="ราคา/หน่วย" prefWidth="90" sortable="false"/>
+                            <TableColumn text="จำนวน" prefWidth="60" sortable="false"/>
+                            <TableColumn text="รวม (บาท)" prefWidth="100" sortable="false"/>
+                        </columns>
+                    </TableView>
+                    <GridPane hgap="8" vgap="8">
+                        <columnConstraints>
+                            <ColumnConstraints/>
+                            <ColumnConstraints hgrow="ALWAYS"/>
+                        </columnConstraints>
+                        <Label fx:id="totalLabel" styleClass="big-number" GridPane.columnSpan="2"/>
+                        <Label text="รหัสสมาชิก (ไม่บังคับ):" GridPane.rowIndex="1"/>
+                        <TextField fx:id="memberIdField" GridPane.rowIndex="1" GridPane.columnIndex="1">
+                            <tooltip><Tooltip text="เว้นว่างได้ ถ้าเป็นลูกค้าทั่วไป"/></tooltip>
+                        </TextField>
+                        <Label text="เลขอ้างอิงสลิป:" GridPane.rowIndex="2"/>
+                        <TextField fx:id="slipField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                        <Button text="ยืนยันการขาย" styleClass="primary-button" maxWidth="Infinity"
+                                onAction="#confirmSale" GridPane.rowIndex="3" GridPane.columnSpan="2"/>
+                    </GridPane>
+                </VBox>
+            </TitledPane>
+        </SplitPane>
+    </center>
+</BorderPane>

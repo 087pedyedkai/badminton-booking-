@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- หน้าเข้าสู่ระบบ: การ์ดสีขาวอยู่กึ่งกลางหน้าจอ (StackPane จัดลูกให้อยู่ตรงกลางเอง) -->
+<StackPane fx:id="root" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.example.badminton.fx.LoginController">
+
+    <VBox styleClass="login-card" maxWidth="-Infinity" maxHeight="-Infinity">
+        <Label text="ระบบจองสนามแบดมินตัน" styleClass="login-title"/>
+        <VBox alignment="CENTER" spacing="2">
+            <Label text="12 สนาม | ค่าสนาม 180 บาท/ชั่วโมง" styleClass="muted"/>
+            <Label text="จันทร์-ศุกร์ 13:00-21:00 | เสาร์-อาทิตย์ และวันหยุดนักขัตฤกษ์ 10:00-20:00" styleClass="muted"/>
+        </VBox>
+        <Region minHeight="14"/>
+        <Button text="เข้าสู่ระบบพนักงานแคชเชียร์" styleClass="primary-button,big-button" onAction="#loginCashier"/>
+        <Button text="เข้าสู่ระบบผู้ดูแลระบบ" styleClass="primary-button,big-button" onAction="#loginAdmin"/>
+        <Button text="สมัครสมาชิก" styleClass="big-button" onAction="#register"/>
+        <Button text="ออกจากโปรแกรม" styleClass="big-button" onAction="#exit"/>
+        <Region minHeight="8"/>
+        <Label text="* จำลองการเข้าสู่ระบบเพื่อการเรียนรู้ (ไม่มีรหัสผ่าน)" styleClass="muted,note"/>
+    </VBox>
+</StackPane>
