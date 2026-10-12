@@ -12,6 +12,7 @@
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 
 <!-- ค้นหา/ดูการจอง (ใช้ทั้งแท็บ "ค้นหาการจอง" ของแคชเชียร์ และ "การจองทั้งหมด" ของผู้ดูแลระบบ) -->
 <BorderPane fx:id="root" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
@@ -26,6 +27,10 @@
             <TextField fx:id="keywordField" prefColumnCount="16" onAction="#searchClicked"/>
             <Button text="ค้นหา" styleClass="primary-button" onAction="#searchClicked"/>
             <Label fx:id="resultLabel"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="editButton" text="แก้ไขการจอง" disable="true" onAction="#editClicked"/>
+            <Button fx:id="cancelButton" text="ยกเลิกการจอง" styleClass="danger-button" disable="true"
+                    onAction="#cancelClicked"/>
         </HBox>
     </top>
 

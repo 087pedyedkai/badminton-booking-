@@ -16,6 +16,7 @@ import java.util.List;
  * - ตรวจเวลาเปิด-ปิด (จ-ศ 13:00-21:00 / ส-อา และวันหยุดนักขัตฤกษ์ 10:00-20:00)
  * - ตรวจการจองซ้อน (สนามเดียวกัน วันเดียวกัน เวลาทับกัน = ห้าม)
  * - สร้างการจอง หักชั่วโมงแพ็กเกจ / เพิ่มชั่วโมงสะสม
+ * - แก้ไข (เลื่อนสนาม/วัน/เวลา) และยกเลิกการจอง พร้อมคืนชั่วโมงแพ็กเกจหรือคืนเงิน
  * - ค้นหาการจองตามรหัสการจอง รหัสสมาชิก ชื่อสมาชิก หรือวันที่
  *
  * ความสัมพันธ์กับคลาสอื่น:
@@ -94,8 +95,16 @@ public class BookingService {
 
     /** ตรวจว่าสนามว่างในช่วงเวลาที่ต้องการหรือไม่ (ไม่ทับกับการจองใดเลย) */
     public boolean isCourtAvailable(int courtNumber, LocalDate date, LocalTime start, LocalTime end) {
+        return isCourtAvailable(courtNumber, date, start, end, null);
+    }
+
+    /**
+     * เหมือนด้านบน แต่ไม่นับการจอง ignored (ใช้ตอนแก้ไขการจอง: เลื่อนเวลาไปทับเวลาเดิมของตัวเองได้)
+     */
+    private boolean isCourtAvailable(int courtNumber, LocalDate date, LocalTime start, LocalTime end,
+                                     Booking ignored) {
         for (Booking booking : bookings) {
-            if (booking.overlapsWith(courtNumber, date, start, end)) {
+            if (booking != ignored && booking.overlapsWith(courtNumber, date, start, end)) {
                 return false;
             }
         }
@@ -114,6 +123,11 @@ public class BookingService {
      * 5) สนามต้องว่าง (ไม่ทับกับการจองอื่นของสนามเดียวกัน)
      */
     public String validateBooking(int courtNumber, LocalDate date, int startHour, int hours) {
+        return validate(courtNumber, date, startHour, hours, null);
+    }
+
+    /** ตรวจเหมือน validateBooking() โดยไม่นับการจอง ignored ว่าเป็นการจองที่ทับเวลา */
+    private String validate(int courtNumber, LocalDate date, int startHour, int hours, Booking ignored) {
         if (getCourt(courtNumber) == null) {
             return "หมายเลขสนามไม่ถูกต้อง (มีสนามที่ 1 ถึง " + TOTAL_COURTS + ")";
         }
@@ -133,7 +147,7 @@ public class BookingService {
         }
         LocalTime start = LocalTime.of(startHour, 0);
         LocalTime end = start.plusHours(hours);
-        if (!isCourtAvailable(courtNumber, date, start, end)) {
+        if (!isCourtAvailable(courtNumber, date, start, end, ignored)) {
             return "สนาม " + courtNumber + " ถูกจองแล้วในช่วงเวลา " + start + " - " + end
                     + " ของวันที่ " + date + " กรุณาเลือกเวลาหรือสนามอื่น";
         }
@@ -188,6 +202,71 @@ public class BookingService {
         member.addBooking(booking);
         nextBookingNumber++;
         return booking;
+    }
+
+    // ---------------- แก้ไข / ยกเลิกการจอง ----------------
+
+    /**
+     * ตรวจว่าการจองนี้ยังแก้ไขหรือยกเลิกได้หรือไม่ คืนข้อความ error หรือ null ถ้าทำได้
+     * กติกา: การจองของวันที่ผ่านมาแล้ว (ใช้สนามไปแล้ว) แก้ไข/ยกเลิกไม่ได้
+     */
+    public String checkModifiable(Booking booking) {
+        if (booking == null || !bookings.contains(booking)) {
+            return "ไม่พบการจองนี้ในระบบ";
+        }
+        if (booking.getBookingDate().isBefore(LocalDate.now())) {
+            return "การจอง " + booking.getBookingId() + " เป็นของวันที่ผ่านมาแล้ว แก้ไขหรือยกเลิกไม่ได้";
+        }
+        return null;
+    }
+
+    /**
+     * ตรวจข้อมูลการแก้ไขการจอง (สนาม/วันที่/เวลาเริ่มใหม่) คืนข้อความ error หรือ null ถ้าผ่าน
+     * จำนวนชั่วโมงคงเดิม (ค่าสนาม ส่วนลด และชั่วโมงแพ็กเกจจึงไม่เปลี่ยน)
+     * ถ้าต้องการเปลี่ยนจำนวนชั่วโมง ให้ยกเลิกการจองเดิมแล้วจองใหม่
+     */
+    public String validateUpdate(Booking booking, int courtNumber, LocalDate date, int startHour) {
+        String error = checkModifiable(booking);
+        if (error != null) {
+            return error;
+        }
+        return validate(courtNumber, date, startHour, booking.getDurationHours(), booking);
+    }
+
+    /**
+     * แก้ไขการจอง: เลื่อนไปสนาม/วันที่/เวลาใหม่
+     * ขั้นตอน: ตรวจด้วย validateUpdate() (ไม่นับเวลาเดิมของการจองนี้ว่าทับ) -> Booking.reschedule()
+     */
+    public void updateBooking(Booking booking, int courtNumber, LocalDate date, int startHour) {
+        String error = validateUpdate(booking, courtNumber, date, startHour);
+        if (error != null) {
+            throw new IllegalArgumentException(error);
+        }
+        booking.reschedule(getCourt(courtNumber), date, LocalTime.of(startHour, 0));
+    }
+
+    /**
+     * ยกเลิก (ลบ) การจอง ทำย้อนกลับทุกอย่างที่ createBooking() และการชำระเงินทำไว้:
+     * 1) ใช้แพ็กเกจ -> คืนชั่วโมงแพ็กเกจ / จ่ายปกติ -> ลดชั่วโมงสะสม (ส่วนลดชั่วโมงที่ 20 ไม่คลาดเคลื่อน)
+     * 2) ให้ PaymentService ยกเลิกรายการรับเงินค่าสนามและค่าเช่ารองเท้า (คืนเงิน)
+     * 3) ลบการจองออกจากระบบและจากประวัติของสมาชิก
+     * คืนยอดเงินที่ต้องคืนให้สมาชิก (0 ถ้าใช้แพ็กเกจและไม่ได้เช่ารองเท้า)
+     */
+    public double cancelBooking(Booking booking) {
+        String error = checkModifiable(booking);
+        if (error != null) {
+            throw new IllegalArgumentException(error);
+        }
+        Member member = booking.getMember();
+        if (booking.isUsedPackage()) {
+            member.returnPackageHours(booking.getDurationHours());
+        } else {
+            member.removeQualifyingHours(booking.getDurationHours());
+        }
+        double refund = paymentService.cancelBookingPayments(booking);
+        bookings.remove(booking);
+        member.removeBooking(booking);
+        return refund;
     }
 
     // ---------------- การค้นหา ----------------

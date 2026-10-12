@@ -23,7 +23,6 @@ public class ShoeRental {
     private final String rentalId;
     private final Booking booking;
     private final int pairs;
-    private final LocalDate rentalDate; // วันที่ใช้รองเท้า = วันที่จองสนาม
     private final int rentalDays;       // จำนวนวันที่เช่า (การจอง 1 รายการ = 1 วัน)
     private final String slipReference;
 
@@ -37,7 +36,6 @@ public class ShoeRental {
         this.rentalId = rentalId;
         this.booking = booking;
         this.pairs = pairs;
-        this.rentalDate = booking.getBookingDate();
         this.rentalDays = rentalDays;
         this.slipReference = slipReference;
     }
@@ -66,8 +64,9 @@ public class ShoeRental {
         return pairs;
     }
 
+    /** วันที่ใช้รองเท้า = วันที่จองสนาม (อ่านจาก Booking เสมอ จึงตรงกันแม้การจองถูกเลื่อนวัน) */
     public LocalDate getRentalDate() {
-        return rentalDate;
+        return booking.getBookingDate();
     }
 
     public int getRentalDays() {
@@ -80,7 +79,7 @@ public class ShoeRental {
 
     @Override
     public String toString() {
-        return rentalId + " | " + pairs + " คู่ x " + rentalDays + " วัน | วันที่ใช้ " + rentalDate
+        return rentalId + " | " + pairs + " คู่ x " + rentalDays + " วัน | วันที่ใช้ " + getRentalDate()
                 + " | " + String.format("%,.2f", getRentalFee()) + " บาท";
     }
 }

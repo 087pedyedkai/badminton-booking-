@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Cashier = พนักงานแคชเชียร์ (สืบทอดจาก SystemUser)
  *
- * หน้าที่ตามโจทย์: บันทึกการจอง, ค้นหาการจอง, บันทึกการชำระเงินและสลิป,
+ * หน้าที่ตามโจทย์: บันทึกการจอง, ค้นหาการจอง, แก้ไข/ยกเลิกการจอง, บันทึกการชำระเงินและสลิป,
  *                 รับค่าเช่าสนาม/เช่ารองเท้า/ขายแพ็กเกจ/ขายอุปกรณ์
  *
  * ความสัมพันธ์กับคลาสอื่น:
@@ -63,8 +63,9 @@ public class Cashier extends SystemUser {
             System.out.println("6. เช่ารองเท้า (เพิ่มให้การจองที่มีอยู่)");
             System.out.println("7. ขายอุปกรณ์แบดมินตัน");
             System.out.println("8. ดูข้อมูลสมาชิก");
+            System.out.println("9. แก้ไข/ยกเลิกการจอง");
             System.out.println("0. กลับเมนูหลัก");
-            int choice = InputHelper.readInt("เลือกเมนู: ", 0, 8);
+            int choice = InputHelper.readInt("เลือกเมนู: ", 0, 9);
             switch (choice) {
                 case 1 -> bookCourt();
                 case 2 -> viewCourtSchedule();
@@ -74,6 +75,7 @@ public class Cashier extends SystemUser {
                 case 6 -> rentShoes();
                 case 7 -> sellEquipment();
                 case 8 -> viewMemberInfo();
+                case 9 -> editOrCancelBooking();
                 case 0 -> {
                     return; // ออกจากเมนูแคชเชียร์ กลับไปเมนูหลัก
                 }
@@ -247,6 +249,74 @@ public class Cashier extends SystemUser {
         for (Booking booking : bookings) {
             System.out.println("  " + booking);
         }
+    }
+
+    // =====================================================================
+    // 9. แก้ไข / ยกเลิกการจอง
+    // =====================================================================
+
+    /**
+     * แก้ไข = เลื่อนสนาม/วันที่/เวลาเริ่ม (จำนวนชั่วโมงและค่าสนามคงเดิม)
+     * ยกเลิก = ลบการจอง คืนชั่วโมงแพ็กเกจหรือลดชั่วโมงสะสม และยกเลิกรายการรับเงิน (คืนเงิน)
+     * กติกาทั้งหมดอยู่ใน BookingService (updateBooking / cancelBooking)
+     */
+    private void editOrCancelBooking() {
+        printSection("แก้ไข/ยกเลิกการจอง");
+        String bookingId = InputHelper.readText("รหัสการจอง (เช่น B001): ");
+        Booking booking = bookingService.findById(bookingId);
+        String error = bookingService.checkModifiable(booking);
+        if (error != null) {
+            System.out.println("  [ผิดพลาด] " + (booking == null ? "ไม่พบการจองรหัส " + bookingId : error));
+            return;
+        }
+        booking.printDetails();
+        System.out.println("1. แก้ไขสนาม/วันที่/เวลา");
+        System.out.println("2. ยกเลิกการจอง");
+        System.out.println("0. กลับ");
+        int choice = InputHelper.readInt("เลือก: ", 0, 2);
+        if (choice == 1) {
+            editBooking(booking);
+        } else if (choice == 2) {
+            cancelBooking(booking);
+        }
+    }
+
+    private void editBooking(Booking booking) {
+        System.out.println("  (จำนวนชั่วโมงคงเดิม " + booking.getDurationHours()
+                + " ชม. ถ้าต้องการเปลี่ยนจำนวนชั่วโมง ให้ยกเลิกแล้วจองใหม่)");
+        int courtNumber = InputHelper.readInt("สนามใหม่ (1-" + BookingService.TOTAL_COURTS + "): ",
+                1, BookingService.TOTAL_COURTS);
+        LocalDate date = InputHelper.readDate("วันที่ใหม่ (ปี-เดือน-วัน): ");
+        System.out.println("  วัน" + FormatHelper.thaiDayName(date) + " เปิดให้บริการ "
+                + bookingService.getOpeningTime(date) + " - " + bookingService.getClosingTime(date));
+        int startHour = InputHelper.readInt("เวลาเริ่มใหม่ (ใส่ชั่วโมง 0-23): ", 0, 23);
+        String error = bookingService.validateUpdate(booking, courtNumber, date, startHour);
+        if (error != null) {
+            System.out.println("  [แก้ไขไม่สำเร็จ] " + error);
+            return;
+        }
+        if (!InputHelper.readYesNo(String.format("ยืนยันเลื่อนเป็นสนาม %d วันที่ %s เวลา %02d:00-%02d:00 (y/n): ",
+                courtNumber, date, startHour, startHour + booking.getDurationHours()))) {
+            System.out.println("  ไม่ได้แก้ไขการจอง");
+            return;
+        }
+        bookingService.updateBooking(booking, courtNumber, date, startHour);
+        System.out.println("  แก้ไขการจองสำเร็จ");
+        booking.printDetails();
+    }
+
+    private void cancelBooking(Booking booking) {
+        if (booking.isUsedPackage()) {
+            System.out.println("  จะคืนชั่วโมงแพ็กเกจ " + booking.getDurationHours() + " ชม. ให้สมาชิก");
+        }
+        System.out.println("  ยอดเงินที่ต้องคืน: " + FormatHelper.money(booking.getTotalAmount()));
+        if (!InputHelper.readYesNo("ยืนยันยกเลิกการจอง " + booking.getBookingId() + " (y/n): ")) {
+            System.out.println("  ไม่ได้ยกเลิกการจอง");
+            return;
+        }
+        double refund = bookingService.cancelBooking(booking);
+        System.out.println("  ยกเลิกการจอง " + booking.getBookingId() + " สำเร็จ คืนเงินสมาชิก "
+                + FormatHelper.money(refund));
     }
 
     // =====================================================================

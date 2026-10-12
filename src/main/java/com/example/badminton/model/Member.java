@@ -87,6 +87,17 @@ public class Member {
         qualifyingHours += hours;
     }
 
+    /**
+     * ลดชั่วโมงสะสม (เมื่อยกเลิกการจองแบบจ่ายเงินปกติ) ไม่ให้ติดลบ
+     * ผลคือการจองครั้งถัดไปจะนับชั่วโมงที่ 20 เหมือนการจองที่ยกเลิกไม่เคยเกิดขึ้น
+     */
+    public void removeQualifyingHours(int hours) {
+        if (hours <= 0) {
+            throw new IllegalArgumentException("ชั่วโมงสะสมที่ลดต้องมากกว่า 0");
+        }
+        qualifyingHours = Math.max(0, qualifyingHours - hours);
+    }
+
     // ---------------- การจัดการแพ็กเกจ ----------------
 
     public void addPackage(MembershipPackage membershipPackage) {
@@ -131,10 +142,30 @@ public class Member {
         return true;
     }
 
+    /**
+     * คืนชั่วโมงแพ็กเกจเมื่อยกเลิกการจองที่ใช้แพ็กเกจ
+     * usePackageHours() หักจากแพ็กเกจเก่าสุดก่อน จึงคืนกลับจากแพ็กเกจใหม่สุดก่อน (ย้อนลำดับการหัก)
+     */
+    public void returnPackageHours(int hours) {
+        int hoursLeftToReturn = hours;
+        for (int i = packages.size() - 1; i >= 0 && hoursLeftToReturn > 0; i--) {
+            MembershipPackage p = packages.get(i);
+            int hoursToThisPackage = Math.min(p.getUsedHours(), hoursLeftToReturn);
+            if (hoursToThisPackage > 0) {
+                p.returnHours(hoursToThisPackage);
+                hoursLeftToReturn -= hoursToThisPackage;
+            }
+        }
+    }
+
     // ---------------- ประวัติการจอง ----------------
 
     public void addBooking(Booking booking) {
         bookings.add(booking);
+    }
+
+    public void removeBooking(Booking booking) {
+        bookings.remove(booking);
     }
 
     public List<Booking> getBookings() {

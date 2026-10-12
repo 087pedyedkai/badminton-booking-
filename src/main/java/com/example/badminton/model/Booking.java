@@ -32,9 +32,9 @@ public class Booking {
 
     private final String bookingId;
     private final Member member;
-    private final Court court;
-    private final LocalDate bookingDate;
-    private final LocalTime startTime;
+    private Court court;                    // แก้ไขได้ผ่าน reschedule() เท่านั้น
+    private LocalDate bookingDate;
+    private LocalTime startTime;
     private final int durationHours;
     private final double courtFee;          // ค่าสนามที่คำนวณแล้ว (รวมส่วนลดถ้ามี, ใช้แพ็กเกจ = 0)
     private final int discountedHours;      // จำนวนชั่วโมงในการจองนี้ที่ได้ส่วนลด 30%
@@ -86,6 +86,16 @@ public class Booking {
             return false;
         }
         return startTime.isBefore(otherEnd) && otherStart.isBefore(getEndTime());
+    }
+
+    /**
+     * เลื่อนการจอง: เปลี่ยนสนาม วันที่ และเวลาเริ่ม (จำนวนชั่วโมงเท่าเดิม ค่าสนามจึงไม่เปลี่ยน)
+     * เรียกโดย BookingService.updateBooking() หลังตรวจเวลาทำการและสนามว่างแล้วเท่านั้น
+     */
+    public void reschedule(Court newCourt, LocalDate newDate, LocalTime newStartTime) {
+        this.court = newCourt;
+        this.bookingDate = newDate;
+        this.startTime = newStartTime;
     }
 
     /** บันทึกว่าชำระค่าสนามแล้ว (เรียกโดย PaymentService เท่านั้น) */

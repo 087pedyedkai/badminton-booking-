@@ -6,6 +6,7 @@ import com.example.badminton.service.BookingService;
 import com.example.badminton.util.FormatHelper;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
@@ -24,6 +25,8 @@ import java.util.List;
  *
  * Service ที่เรียก: BookingService.findById / searchByMemberId / searchByMemberName / searchByDate / getAllBookings
  * คลิกแถวในตาราง -> แสดงรายละเอียดเต็มของการจองนั้นด้านล่าง (Booking.getDetailsText())
+ * ปุ่ม "แก้ไขการจอง" -> EditBookingDialog (BookingService.updateBooking)
+ * ปุ่ม "ยกเลิกการจอง" -> BookingService.cancelBooking (คืนชั่วโมงแพ็กเกจ / คืนเงิน)
  */
 public class BookingSearchController implements Refreshable {
 
@@ -40,6 +43,8 @@ public class BookingSearchController implements Refreshable {
     @FXML private Label resultLabel;
     @FXML private TableView<Booking> table;
     @FXML private TextArea detailsArea;
+    @FXML private Button editButton;
+    @FXML private Button cancelButton;
 
     public BookingSearchController(BadmintonSystem system) {
         this.bookingService = system.getBookingService();
@@ -68,6 +73,8 @@ public class BookingSearchController implements Refreshable {
                 detailsArea.setText(booking.getDetailsText());
                 detailsArea.positionCaret(0); // เลื่อนกลับไปบรรทัดแรก
             }
+            editButton.setDisable(booking == null);
+            cancelButton.setDisable(booking == null);
         });
     }
 
@@ -127,6 +134,53 @@ public class BookingSearchController implements Refreshable {
             }
         }
         showResults(results);
+    }
+
+    /** แก้ไขการจองที่เลือก (เลื่อนสนาม/วันที่/เวลา) */
+    @FXML
+    private void editClicked() {
+        Booking booking = table.getSelectionModel().getSelectedItem();
+        String error = bookingService.checkModifiable(booking);
+        if (error != null) {
+            FxHelper.showError(root, error);
+            return;
+        }
+        try {
+            if (new EditBookingDialog(root, bookingService, booking).showAndSave()) {
+                FxHelper.showText(root, "แก้ไขสำเร็จ", "แก้ไขการจองสำเร็จ!\n\n" + booking.getDetailsText());
+                search(false);
+            }
+        } catch (IllegalArgumentException e) {
+            FxHelper.showError(root, e.getMessage());
+        }
+    }
+
+    /** ยกเลิก (ลบ) การจองที่เลือก */
+    @FXML
+    private void cancelClicked() {
+        Booking booking = table.getSelectionModel().getSelectedItem();
+        String error = bookingService.checkModifiable(booking);
+        if (error != null) {
+            FxHelper.showError(root, error);
+            return;
+        }
+        String effect = booking.isUsedPackage()
+                ? "คืนชั่วโมงแพ็กเกจ " + booking.getDurationHours() + " ชม. ให้สมาชิก"
+                : "ลดชั่วโมงสะสม " + booking.getDurationHours() + " ชม.";
+        if (!FxHelper.confirm(root, "ยืนยันการยกเลิก", "ยกเลิกการจอง " + booking.getBookingId()
+                + " ของ " + booking.getMember().getFullName() + " ?\n"
+                + "- " + effect + "\n- คืนเงิน " + FormatHelper.money(booking.getTotalAmount())
+                + " (ลบรายการรับเงินของการจองนี้)")) {
+            return;
+        }
+        try {
+            double refund = bookingService.cancelBooking(booking);
+            FxHelper.showInfo(root, "ยกเลิกสำเร็จ", "ยกเลิกการจอง " + booking.getBookingId()
+                    + " แล้ว\nยอดเงินที่ต้องคืนสมาชิก: " + FormatHelper.money(refund));
+            search(false);
+        } catch (IllegalArgumentException e) {
+            FxHelper.showError(root, e.getMessage());
+        }
     }
 
     private void showResults(List<Booking> results) {

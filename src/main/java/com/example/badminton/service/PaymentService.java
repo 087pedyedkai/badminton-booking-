@@ -183,6 +183,35 @@ public class PaymentService {
         return rental;
     }
 
+    // ---------------- ยกเลิกการจอง ----------------
+
+    /**
+     * ยกเลิกรายการเงินทั้งหมดของการจอง (เรียกโดย BookingService.cancelBooking())
+     * กติกาที่เลือก: ยกเลิกการจอง = คืนเงินเต็มจำนวน จึงลบ Payment ค่าสนามและค่าเช่ารองเท้าของการจองนี้
+     * ออกจากระบบ รายงานรายได้จะไม่นับเงินก้อนนี้อีก (รายได้นับเฉพาะเงินที่ร้านได้รับจริง)
+     * คืนยอดเงินที่ต้องคืนให้สมาชิก
+     */
+    public double cancelBookingPayments(Booking booking) {
+        List<String> referenceIds = new ArrayList<>();
+        referenceIds.add(booking.getBookingId());
+        for (ShoeRental rental : booking.getShoeRentals()) {
+            referenceIds.add(rental.getRentalId());
+            shoeRentals.remove(rental);
+        }
+        double refund = 0;
+        for (int i = payments.size() - 1; i >= 0; i--) {
+            Payment payment = payments.get(i);
+            boolean ofThisBooking = (payment.getType() == PaymentType.COURT_RENTAL
+                    || payment.getType() == PaymentType.SHOE_RENTAL)
+                    && referenceIds.contains(payment.getReferenceId());
+            if (ofThisBooking) {
+                refund += payment.getAmount();
+                payments.remove(i);
+            }
+        }
+        return refund;
+    }
+
     public List<Payment> getAllPayments() {
         return new ArrayList<>(payments);
     }

@@ -15,6 +15,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -27,6 +28,8 @@ import java.util.List;
  * - ผู้ดูแลระบบ: "ดูข้อมูลการจองทั้งหมด" (เริ่มต้นที่โหมดแสดงทั้งหมด)
  *
  * คลิกแถวในตาราง -> แสดงรายละเอียดเต็มของการจองนั้นด้านล่าง (Booking.getDetailsText())
+ * ปุ่ม "แก้ไขการจอง" -> EditBookingDialog (BookingService.updateBooking)
+ * ปุ่ม "ยกเลิกการจอง" -> BookingService.cancelBooking (คืนชั่วโมงแพ็กเกจ / คืนเงิน)
  */
 public class BookingSearchPanel extends JPanel implements Refreshable {
 
@@ -43,6 +46,8 @@ public class BookingSearchPanel extends JPanel implements Refreshable {
             "รหัส", "สมาชิก", "สนาม", "วันที่ใช้สนาม", "เวลา", "ชม.", "ค่าสนาม", "ค่าเช่ารองเท้า", "ยอดรวม", "สถานะ");
     private final JTable table = UiHelper.table(tableModel);
     private final JTextArea detailsArea = UiHelper.outputArea();
+    private final JButton editButton = new JButton("แก้ไขการจอง");
+    private final JButton cancelButton = new JButton("ยกเลิกการจอง");
     private List<Booking> currentResults = new ArrayList<>();
 
     public BookingSearchPanel(BookingService bookingService, boolean showAllByDefault) {
@@ -58,6 +63,19 @@ public class BookingSearchPanel extends JPanel implements Refreshable {
         searchBar.add(searchButton);
         searchBar.add(resultLabel);
 
+        JPanel actionBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        cancelButton.setBackground(UiHelper.ERROR);
+        cancelButton.setForeground(Color.WHITE);
+        editButton.setEnabled(false);
+        cancelButton.setEnabled(false);
+        actionBar.add(editButton);
+        actionBar.add(cancelButton);
+        editButton.addActionListener(e -> editSelected());
+        cancelButton.addActionListener(e -> cancelSelected());
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.add(searchBar, BorderLayout.CENTER);
+        topBar.add(actionBar, BorderLayout.EAST);
+
         searchButton.addActionListener(e -> search(true));
         keywordField.addActionListener(e -> search(true));
         searchTypeCombo.addActionListener(e -> {
@@ -69,12 +87,13 @@ public class BookingSearchPanel extends JPanel implements Refreshable {
 
         // เลือกแถว -> แสดงรายละเอียด (ต้องแปลงลำดับแถว เพราะผู้ใช้อาจกดเรียงตารางใหม่)
         table.getSelectionModel().addListSelectionListener(e -> {
-            int viewRow = table.getSelectedRow();
-            if (viewRow >= 0) {
-                int modelRow = table.convertRowIndexToModel(viewRow);
-                detailsArea.setText(currentResults.get(modelRow).getDetailsText());
+            Booking booking = getSelectedBooking();
+            if (booking != null) {
+                detailsArea.setText(booking.getDetailsText());
                 detailsArea.setCaretPosition(0); // เลื่อนกลับไปบรรทัดแรก
             }
+            editButton.setEnabled(booking != null);
+            cancelButton.setEnabled(booking != null);
         });
         table.getColumnModel().getColumn(1).setPreferredWidth(150);
         table.getColumnModel().getColumn(3).setPreferredWidth(150);
@@ -84,7 +103,7 @@ public class BookingSearchPanel extends JPanel implements Refreshable {
                 UiHelper.scroll(table), UiHelper.section("รายละเอียดการจอง (คลิกแถวในตาราง)", UiHelper.scroll(detailsArea)));
         split.setResizeWeight(0.65);
 
-        add(searchBar, BorderLayout.NORTH);
+        add(topBar, BorderLayout.NORTH);
         add(split, BorderLayout.CENTER);
 
         if (showAllByDefault) {
@@ -129,6 +148,56 @@ public class BookingSearchPanel extends JPanel implements Refreshable {
             }
         }
         showResults(results);
+    }
+
+    /** การจองของแถวที่เลือก (ต้องแปลงลำดับแถว เพราะผู้ใช้อาจกดเรียงตารางใหม่) หรือ null */
+    private Booking getSelectedBooking() {
+        int viewRow = table.getSelectedRow();
+        if (viewRow < 0) {
+            return null;
+        }
+        return currentResults.get(table.convertRowIndexToModel(viewRow));
+    }
+
+    /** แก้ไขการจองที่เลือก (เลื่อนสนาม/วันที่/เวลา) */
+    private void editSelected() {
+        Booking booking = getSelectedBooking();
+        String error = bookingService.checkModifiable(booking);
+        if (error != null) {
+            UiHelper.showError(this, error);
+            return;
+        }
+        if (new EditBookingDialog(this, bookingService, booking).showAndSave()) {
+            UiHelper.showText(this, "แก้ไขสำเร็จ", "แก้ไขการจองสำเร็จ!\n\n" + booking.getDetailsText());
+            search(false);
+        }
+    }
+
+    /** ยกเลิก (ลบ) การจองที่เลือก */
+    private void cancelSelected() {
+        Booking booking = getSelectedBooking();
+        String error = bookingService.checkModifiable(booking);
+        if (error != null) {
+            UiHelper.showError(this, error);
+            return;
+        }
+        String effect = booking.isUsedPackage()
+                ? "คืนชั่วโมงแพ็กเกจ " + booking.getDurationHours() + " ชม. ให้สมาชิก"
+                : "ลดชั่วโมงสะสม " + booking.getDurationHours() + " ชม.";
+        if (!UiHelper.confirm(this, "ยืนยันการยกเลิก", "ยกเลิกการจอง " + booking.getBookingId()
+                + " ของ " + booking.getMember().getFullName() + " ?\n"
+                + "- " + effect + "\n- คืนเงิน " + FormatHelper.money(booking.getTotalAmount())
+                + " (ลบรายการรับเงินของการจองนี้)")) {
+            return;
+        }
+        try {
+            double refund = bookingService.cancelBooking(booking);
+            UiHelper.showInfo(this, "ยกเลิกสำเร็จ", "ยกเลิกการจอง " + booking.getBookingId()
+                    + " แล้ว\nยอดเงินที่ต้องคืนสมาชิก: " + FormatHelper.money(refund));
+            search(false);
+        } catch (IllegalArgumentException e) {
+            UiHelper.showError(this, e.getMessage());
+        }
     }
 
     private void showResults(List<Booking> results) {

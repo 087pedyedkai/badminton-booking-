@@ -101,6 +101,18 @@
     -fx-background-color: #144A18;
 }
 
+/* ปุ่มที่ลบข้อมูล (เช่น ยกเลิกการจอง) ใช้สีแดงให้ผู้ใช้ระวัง */
+.danger-button {
+    -fx-background-color: #C62828;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4;
+}
+
+.danger-button:hover {
+    -fx-background-color: #A31F1F;
+}
+
 /* ---------------- กรอบหัวข้อ (TitledPane ที่พับไม่ได้) ---------------- */
 .section {
     -fx-text-fill: #1B5E20;

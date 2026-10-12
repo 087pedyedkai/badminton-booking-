@@ -43,6 +43,17 @@ public class MembershipPackage {
         remainingHours -= hours;
     }
 
+    /**
+     * คืนชั่วโมงแพ็กเกจ (เมื่อยกเลิกการจองที่ใช้แพ็กเกจ)
+     * คืนได้ไม่เกินชั่วโมงที่ใช้ไป ชั่วโมงคงเหลือจึงไม่มีทางเกินชั่วโมงเต็มของแพ็กเกจ
+     */
+    public void returnHours(int hours) {
+        if (hours <= 0 || hours > getUsedHours()) {
+            throw new IllegalArgumentException("คืนชั่วโมงแพ็กเกจได้ 1 ถึง " + getUsedHours() + " ชั่วโมง");
+        }
+        remainingHours += hours;
+    }
+
     public String getPackageId() {
         return packageId;
     }
