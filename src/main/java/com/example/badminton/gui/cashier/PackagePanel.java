@@ -114,6 +114,15 @@ public class PackagePanel extends JPanel implements Refreshable {
     }
 
     private void buyPackage() {
+        if (currentMember.getFreePackagesAvailable() > 0) { // มีสิทธิ์ -> รับฟรี ไม่ต้องใช้สลิป
+            if (UiHelper.confirm(this, "รับแพ็กเกจฟรี", "สมาชิกมีสิทธิ์รับแพ็กเกจ "
+                    + MembershipPackage.PACKAGE_HOURS + " ชม. ฟรี\nให้ " + currentMember.getFullName() + " ?")) {
+                MembershipPackage free = paymentService.claimFreePackage(currentMember);
+                showMember();
+                UiHelper.showInfo(this, "รับแพ็กเกจฟรีสำเร็จ", "ได้รับแพ็กเกจฟรี: " + free.getPackageId());
+            }
+            return;
+        }
         String slip = slipField.getText().trim();
         if (slip.isEmpty()) {
             UiHelper.showError(this, "กรุณากรอกเลขอ้างอิงสลิป หรือพิมพ์ CASH ถ้าชำระเงินสด");

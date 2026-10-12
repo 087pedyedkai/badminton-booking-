@@ -83,6 +83,15 @@ public class PackageController implements Refreshable {
 
     @FXML
     private void buyPackage() {
+        if (currentMember.getFreePackagesAvailable() > 0) { // มีสิทธิ์ -> รับฟรี ไม่ต้องใช้สลิป
+            if (FxHelper.confirm(root, "รับแพ็กเกจฟรี", "สมาชิกมีสิทธิ์รับแพ็กเกจ "
+                    + MembershipPackage.PACKAGE_HOURS + " ชม. ฟรี\nให้ " + currentMember.getFullName() + " ?")) {
+                MembershipPackage free = paymentService.claimFreePackage(currentMember);
+                showMember();
+                FxHelper.showInfo(root, "รับแพ็กเกจฟรีสำเร็จ", "ได้รับแพ็กเกจฟรี: " + free.getPackageId());
+            }
+            return;
+        }
         String slip = slipField.getText().trim();
         if (slip.isEmpty()) {
             FxHelper.showError(root, "กรุณากรอกเลขอ้างอิงสลิป หรือพิมพ์ CASH ถ้าชำระเงินสด");

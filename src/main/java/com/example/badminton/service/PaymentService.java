@@ -115,6 +115,9 @@ public class PaymentService {
         String paymentId = String.format("P%04d", nextPaymentNumber);
         Payment payment = new Payment(paymentId, LocalDate.now(), type, amount, member, referenceId, slipReference);
         payments.add(payment);
+        if (member != null) {
+            member.addPaidAmount(amount); // สะสมยอดชำระเพื่อสิทธิ์แพ็กเกจฟรี
+        }
         nextPaymentNumber++;
         return payment;
     }
@@ -163,6 +166,21 @@ public class PaymentService {
         return membershipPackage;
     }
 
+    /**
+     * รับแพ็กเกจ 15 ชั่วโมงฟรีด้วยสิทธิ์ที่สะสมไว้ (ไม่บันทึก Payment เพราะไม่มีเงินเข้า)
+     */
+    public MembershipPackage claimFreePackage(Member member) {
+        if (member == null || member.getFreePackagesAvailable() <= 0) {
+            throw new IllegalArgumentException("ยังไม่มีสิทธิ์รับแพ็กเกจฟรี");
+        }
+        String packageId = String.format("PK%03d", nextPackageNumber);
+        MembershipPackage membershipPackage = new MembershipPackage(packageId, LocalDate.now());
+        member.addPackage(membershipPackage);
+        member.useFreePackageRight();
+        nextPackageNumber++;
+        return membershipPackage;
+    }
+
     // ---------------- เช่ารองเท้า ----------------
 
     /**
@@ -206,6 +224,7 @@ public class PaymentService {
                     && referenceIds.contains(payment.getReferenceId());
             if (ofThisBooking) {
                 refund += payment.getAmount();
+                payment.getMember().removePaidAmount(payment.getAmount());
                 payments.remove(i);
             }
         }

@@ -20,7 +20,6 @@ public class Member {
     private String fullName;
     private String phoneNumber;
     private final LocalDate registerDate;
-
     /**
      * ชั่วโมงสะสมสำหรับคิดส่วนลด (qualifying hours)
      * กติกาที่เลือกใช้ (โจทย์ไม่ได้ระบุชัด):
@@ -29,6 +28,15 @@ public class Member {
      * รายละเอียดการคิดส่วนลดดูที่ PaymentService.calculateCourtFee()
      */
     private int qualifyingHours;
+
+    /**
+     * สิทธิ์รับแพ็กเกจฟรี: ชั่วโมงจองปกติครบ 50 ชม. ได้ 1 สิทธิ์ และยอดชำระสะสมครบ 5,000 บาท ได้ 1 สิทธิ์
+     * (เกณฑ์ละครั้ง รวมสูงสุด 2 สิทธิ์) ชั่วโมงที่ใช้แพ็กเกจจองไม่นับ ยอดชำระนับทุก Payment
+     */
+    public static final int FREE_HOURS_THRESHOLD = 50;
+    public static final double FREE_AMOUNT_THRESHOLD = 5000.0;
+    private double totalPaidAmount;
+    private int freePackagesClaimed;
 
     private final List<MembershipPackage> packages = new ArrayList<>();
     private final List<Booking> bookings = new ArrayList<>();
@@ -96,6 +104,32 @@ public class Member {
             throw new IllegalArgumentException("ชั่วโมงสะสมที่ลดต้องมากกว่า 0");
         }
         qualifyingHours = Math.max(0, qualifyingHours - hours);
+    }
+
+    // ---------------- สิทธิ์รับแพ็กเกจฟรี ----------------
+
+    public double getTotalPaidAmount() {
+        return totalPaidAmount;
+    }
+
+    public void addPaidAmount(double amount) {
+        totalPaidAmount += amount;
+    }
+
+    /** ลดยอดชำระสะสม (เมื่อยกเลิกการจองและคืนเงิน) ไม่ให้ติดลบ */
+    public void removePaidAmount(double amount) {
+        totalPaidAmount = Math.max(0, totalPaidAmount - amount);
+    }
+
+    /** สิทธิ์แพ็กเกจฟรีที่ยังไม่ได้ใช้ = สิทธิ์ที่ได้จากเกณฑ์ชั่วโมง/ยอดชำระ - สิทธิ์ที่ใช้ไปแล้ว */
+    public int getFreePackagesAvailable() {
+        int earned = (qualifyingHours >= FREE_HOURS_THRESHOLD ? 1 : 0)
+                + (totalPaidAmount >= FREE_AMOUNT_THRESHOLD ? 1 : 0);
+        return Math.max(0, earned - freePackagesClaimed);
+    }
+
+    public void useFreePackageRight() {
+        freePackagesClaimed++;
     }
 
     // ---------------- การจัดการแพ็กเกจ ----------------
@@ -180,7 +214,9 @@ public class Member {
                 + "วันที่สมัคร         : " + registerDate + "\n"
                 + "จำนวนการจอง       : " + bookings.size() + " รายการ\n"
                 + "ชั่วโมงสะสม (ส่วนลด): " + qualifyingHours + " ชั่วโมง\n"
-                + "ชั่วโมงแพ็กเกจคงเหลือ: " + getRemainingPackageHours() + " ชั่วโมง";
+                + "ชั่วโมงแพ็กเกจคงเหลือ: " + getRemainingPackageHours() + " ชั่วโมง\n"
+                + "ยอดชำระสะสม        : " + totalPaidAmount + " บาท (สิทธิ์แพ็กเกจฟรี "
+                + getFreePackagesAvailable() + ")";
     }
 
     /** แสดงข้อมูลสมาชิกทาง Console (ใช้ในเมนูแคชเชียร์ "ดูข้อมูลสมาชิก") */

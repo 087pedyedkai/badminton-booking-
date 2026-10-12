@@ -329,6 +329,14 @@ public class Cashier extends SystemUser {
         if (member == null) {
             return;
         }
+        if (member.getFreePackagesAvailable() > 0) { // มีสิทธิ์ -> รับฟรี ไม่ต้องใช้สลิป
+            System.out.println("  สมาชิกมีสิทธิ์รับแพ็กเกจฟรี " + member.getFreePackagesAvailable() + " สิทธิ์");
+            if (InputHelper.readYesNo("ยืนยันรับแพ็กเกจ " + MembershipPackage.PACKAGE_HOURS
+                    + " ชั่วโมงฟรี (y/n): ")) {
+                System.out.println("  รับแพ็กเกจฟรีสำเร็จ: " + paymentService.claimFreePackage(member));
+            }
+            return;
+        }
         System.out.println("  แพ็กเกจ " + MembershipPackage.PACKAGE_HOURS + " ชั่วโมง ราคา "
                 + FormatHelper.money(MembershipPackage.PACKAGE_PRICE));
         System.out.println("  ชั่วโมงคงเหลือปัจจุบัน: " + member.getRemainingPackageHours() + " ชั่วโมง");
